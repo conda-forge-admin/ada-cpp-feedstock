@@ -1,0 +1,12 @@
+diff --git a/src/render/CMakeLists.txt b/src/render/CMakeLists.txt
+--- a/src/render/CMakeLists.txt
++++ b/src/render/CMakeLists.txt
+@@ -113,7 +113,7 @@ else()
+         )
+         find_package(
+             Python
+-            3.12
++            3.10
+             REQUIRED
+             COMPONENTS Interpreter Development.Module
+         )

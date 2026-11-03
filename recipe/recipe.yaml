@@ -11,10 +11,17 @@ package:
 source:
   - url: https://github.com/Krande/adacpp/archive/refs/tags/v${{ version }}.tar.gz
     sha256: 335104144407b50c3fd5394adfb2a15b950feea2cbe8d96cb217ac590685f1cf
+    patches:
+      # src/render asks find_package(Python 3.12) although nothing in it needs 3.12, which fails
+      # the python 3.11 builds; lower it to adacpp's requires-python floor.
+      - render-python-3.10.patch
 
 build:
-  number: 0
-  skip: match(python, "<3.10")
+  number: 1
+  skip:
+    - match(python, "<3.10")
+    # osx-64 is near end of life and its CI is flaky; macOS ships for osx-arm64 only.
+    - target_platform == "osx-64"
 
 requirements:
   build:
@@ -66,12 +73,22 @@ requirements:
     - cli11
     - tinygltf
     - gmsh
+    # adacpp._render, the headless WebGPU renderer (src/render). wgpu-native's run_exports add it as a
+    # run dependency; webgpu-headers carries webgpu.h.
+    - wgpu-native >=29,<30
+    - webgpu-headers
     - pip
     - setuptools
     - wheel
   run:
     - python
     - ${{ pin_compatible('gmsh', upper_bound='x.x') }}
+  # Windows: wgpu_native.lib is the static library, so _render carries wgpu itself and needs no
+  # wgpu-native at run time (see src/render/CMakeLists.txt).
+  ignore_run_exports:
+    by_name:
+      - if: win
+        then: wgpu-native
   run_exports:
     - ${{ pin_subpackage(name, upper_bound='x.x.x') }}
 
@@ -84,13 +101,10 @@ tests:
       run:
         - pytest
     script:
-      # conda-forge's ifcopenshell 0.9.0 osx-64 build segfaults in its own OpenCASCADE kernel on a
-      # plain IfcFacetedBrep box (ifcopenshell.geom.create_shape, no adacpp involved; 0.8.5 and
-      # osx-arm64 are fine). adacpp's `occ` taxonomy pipeline drives that kernel and gets nothing
-      # back, so deselect that one case there until a fixed ifcopenshell build lands.
-      - if: target_platform == "osx-64" and ifcopenshell == "0.9.0"
-        then: pytest tests -k "not (test_blob_tessellates_through_every_pipeline and occ)"
-        else: pytest tests
+      - pytest tests
+  - script:
+      # The renderer module must import without a GPU (the adapter is only requested on construction).
+      - python -c "from adacpp import _render; print(_render.OffscreenRenderer)"
 
 about:
   license: GPL-3.0-or-later
