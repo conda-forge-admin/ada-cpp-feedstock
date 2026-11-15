@@ -1,7 +1,5 @@
-# adacpp >=0.31 builds against either ifcopenshell line (Krande/adacpp#69): 0.8.x via the static
-# libIfcParse.a / libIfcGeom.a, 0.9 via the shared libs + CMake package. Build both while 0.9 is
-# new; each variant's run_exports pins the runtime to its own ifcopenshell x.x.x, so the solver
-# picks the ada-cpp build matching the environment's ifcopenshell.
+# adacpp builds against ifcopenshell 0.9 (the shared libs + CMake package, Krande/adacpp#69). The
+# 0.8.5 variant (static libIfcParse.a / libIfcGeom.a) is no longer built; its published builds
+# (up to 0.42.2) stay available. run_exports pin the runtime to the ifcopenshell x.x.x built against.
 ifcopenshell:
-  - 0.8.5
   - 0.9.0
