@@ -2,7 +2,7 @@ schema_version: 1
 
 context:
   name: ada-cpp
-  version: "0.42.1"
+  version: "0.42.2"
 
 package:
   name: ${{ name|lower }}
@@ -10,7 +10,7 @@ package:
 
 source:
   - url: https://github.com/Krande/adacpp/archive/refs/tags/v${{ version }}.tar.gz
-    sha256: 6c78b5042af471f3258eb06da5d6b3667dd64f452fbd6a14b07fc16905e86686
+    sha256: cd81343a0c6cf79d48652c02883f30c86871dbedae40cbcfd7369a05e56aeb77
     patches:
       # src/render asks find_package(Python 3.12) although nothing in it needs 3.12, which fails
       # the python 3.11 builds; lower it to adacpp's requires-python floor.
@@ -58,13 +58,12 @@ requirements:
   host:
     - python
     - occt
-    # One build per ifcopenshell line in recipe/conda_build_config.yaml (0.8.5 and 0.9.0).
+    # The ifcopenshell line in recipe/conda_build_config.yaml (0.9.0).
     - ifcopenshell
-    # 0.8.x embeds rocksdb in libIfcParse.a and adacpp links RocksDB::rocksdb statically
-    # beside it, so hold the rocksdb ABI 0.8.5 was built against; 0.9 co-solves with it.
+    # Held at the rocksdb ABI the 0.8.5 variant needed; 0.9 co-solves with it.
     - rocksdb >=10.6.2,<10.7.0a0
     # ifcopenshell 0.9's IfcOpenShellConfig.cmake find_dependency()s these; neither is a run
-    # dep of ifcopenshell. Unused by the 0.8.5 variant.
+    # dep of ifcopenshell.
     - libxml2-devel
     - nlohmann_json
     - zlib
